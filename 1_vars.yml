@@ -1,0 +1,14 @@
+---
+partitions
+  - number: 1
+    start: 1MiB
+    end: 1024MiB
+
+volume_groups:
+  - name: apache-vg
+    devices: /dev/sdb1
+
+logical_volumes:
+  - name: www-lv
+    size: 500M
+    vgroup: apache-vg
