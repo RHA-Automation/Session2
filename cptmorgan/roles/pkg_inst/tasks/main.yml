@@ -1,0 +1,5 @@
+---
+- name: Install Packages
+  package:
+    name: "{{ pkgs.name }}"
+    state: "{{ pkgs.state }}"

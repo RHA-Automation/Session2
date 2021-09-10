@@ -1,0 +1,9 @@
+---
+- name: Configure Services on FirewallD
+  firewalld:
+    service: "{{ item.name }}"
+    state: "{{ item.state }}"
+    permanent: "{{ item.perm }}"
+    immediate: "{{ item.now }}"
+  loop:
+    - "{{ fwd_svc.httpd }}"
