@@ -82,7 +82,6 @@
         insertafter: '#<Directory "/var/www/html">'
         line: <Directory "/svr/www/html">
 
-
     - name: Add content to index.html
       lineinfile:
         dest: /srv/www/html/index.html
