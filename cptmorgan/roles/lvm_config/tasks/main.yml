@@ -1,0 +1,44 @@
+---
+- name: Create Partition
+  parted:
+    device: "{{ item.device }}"
+    state: "{{ item.state }}"
+    number: "{{ item.number }}"
+    part_start: "{{ item.start }}"
+    part_end: "{{ item.end }}"
+  loop: "{{ storage.partitions }}"
+
+- name: Create apache-vg Volume Group
+  lvg:
+    vg: "{{ item.name }}"
+    pvs: "{{ item.device }}"
+  loop: "{{ storage.volume_groups }}"
+
+- name: Create www-lv Logical Volume
+  lvol:
+    vg: "{{ item.vgroup }}"
+    lv: "{{ item.name }}"
+    size: "{{ item.size }}"
+  loop: "{{ storage.logical_volumes }}"
+
+- name: Create Filesystems
+  filesystem:
+    dev: "/dev/{{ item.vgroup }}/{{ item.name }}"
+    fstype: "{{ item.fs }}"
+  loop: "{{ storage.logical_volumes }}"
+
+- name: Create mount point
+  file:
+    path: "{{ item.mount_path }}"
+    state: directory
+    owner: root
+    group: root
+  loop: "{{ storage.logical_volumes }}"
+
+- name: Mount logical volumes
+  mount:
+    path: "{{ item.mount_path }}"
+    src: "/dev/{{ item.vgroup }}/{{ item.name }}"
+    fstype: "{{ item.fs }}"
+    state: present
+  loop: "{{ storage.logical_volumes }}"

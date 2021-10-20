@@ -1,0 +1,50 @@
+---
+- name: Create /srv/www/ folder
+  file:
+    path: "{{ apache.docroot }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 755
+    setype: httpd_sys_content_t
+
+- name: Change DocumentRoot to srv
+  lineinfile:
+    path: /etc/httpd/conf/httpd.conf
+    regexp: '^DocumentRoot'
+    insertafter: '#DocumentRoot '
+    line: DocumentRoot "{{ apache.docroot }}"
+
+- name: Change /var/www to /srv/www
+  lineinfile:
+    path: /etc/httpd/conf/httpd.conf
+    regexp: '^<Directory "/var/www">'
+    insertafter: '#<Directory "/var/www">'
+    line: <Directory "{{ apache.docroot }}">
+
+- name: Change /var/www/html to /srv/www/html
+  lineinfile:
+    path: /etc/httpd/conf/httpd.conf
+    regexp: '^<Directory "/var/www/html">'
+    insertafter: '#<Directory "/var/www/html">'
+    line: <Directory "{{ apache.docroot.split('/')[:-1] | join('/') }}">
+
+- name: Add content to index.html
+  lineinfile:
+    dest: "{{ apache.docroot }}/index.html"
+    state: present
+    line: 'It works!'
+    create: yes
+
+- name: Restart httpd
+  service:
+    name: httpd
+    state: started
+    enabled: yes
+
+- name: Ensure http is responding with correct content
+  uri:
+    url: "http://localhost"
+    return_content: yes
+  register: http_output
+  failed_when: "'It works!' not in http_output.content"
